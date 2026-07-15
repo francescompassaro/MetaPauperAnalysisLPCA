@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="space-y-6">
+    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <h1 class="text-xl font-bold mb-4 text-white">Archivio Liste per Tappa</h1>
+        
+        <form method="GET" action="/liste" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Anno</label>
+                <select name="anno" onchange="this.form.submit()" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-sm text-gray-200">
+                    {% for a in anni %}
+                    <option value="{{ a }}" {% if a == filtro_anno %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Season</label>
+                <select name="season" onchange="this.form.submit()" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-sm text-gray-200">
+                    {% for s in seasons %}
+                    <option value="{{ s }}" {% if s == filtro_season %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Numero Tappa</label>
+                <select name="tappa" onchange="this.form.submit()" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-sm text-gray-200">
+                    {% for t in tappe %}
+                    <option value="{{ t }}" {% if t == filtro_tappa %}selected{% endif %}>Tappa {{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    {% if elementi %}
+    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <div class="divide-y divide-gray-700">
+            {% for el in elementi %}
+            <div class="py-4 flex justify-between items-center text-sm">
+                <div>
+                    <span class="text-xs text-yellow-500 font-bold">#{{ loop.index }}</span>
+                    <span class="font-bold text-white ml-2">{{ el.giocatore }}</span>
+                    <span class="text-gray-400 text-xs ml-4">Mazzo: <span class="text-blue-400">{{ el.mazzo }}</span></span>
+                </div>
+                <div>
+                    {% if el.link_deck and el.link_deck.strip() != "" %}
+                    <a href="{{ el.link_deck }}" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold transition">Vedi Lista</a>
+                    {% else %}
+                    <span class="text-xs text-gray-500 italic">Nessuna lista</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center text-gray-400 text-sm">
+        Nessun record caricato per questa combinazione di tappe.
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

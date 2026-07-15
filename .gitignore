@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Database locale (non vogliamo sovrascrivere o condividere il DB reale su GitHub)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+lega_pauper.db
+
+# Configurazione ambiente e chiavi segrete
+.env
+
+# OS
+.DS_Store
+Thumbs.db

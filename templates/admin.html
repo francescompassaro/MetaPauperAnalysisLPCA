@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-black text-white">Amministrazione Lega</h1>
+        <a href="/admin/backup" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded text-xs font-bold transition">Backup DB (.db)</a>
+    </div>
+
+    <!-- TABS MENU -->
+    <div class="flex border-b border-gray-700 text-sm font-semibold">
+        <button onclick="openTab('tab-match')" id="btn-tab-match" class="px-4 py-2.5 border-b-2 border-blue-500 text-blue-400">Match</button>
+        <button onclick="openTab('tab-giocatori')" id="btn-tab-giocatori" class="px-4 py-2.5 text-gray-400 hover:text-gray-200">Anagrafica Giocatori</button>
+        <button onclick="openTab('tab-mazzi')" id="btn-tab-mazzi" class="px-4 py-2.5 text-gray-400 hover:text-gray-200">Anagrafica Mazzi</button>
+    </div>
+
+    <!-- TAB 1: MATCH -->
+    <div id="tab-match" class="tab-content space-y-6">
+        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            <h2 class="text-md font-bold mb-4 text-white">Registra Nuovo Punteggio</h2>
+
+            <form method="POST" action="/admin/match" class="space-y-4 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Anno</label>
+                        <select name="anno" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Season</label>
+                        <select name="season" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                            <option value="Summer">Summer</option>
+                            <option value="Autumn">Autumn</option>
+                            <option value="Winter">Winter</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Tappa</label>
+                        <input type="number" name="tappa" min="1" value="1" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Negozio</label>
+                        <select name="negozio" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                            <option value="Magicomix">Magicomix</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Giocatore</label>
+                        <select name="giocatore" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                            {% for g in giocatori %}
+                            <option value="{{ g.nome }}">{{ g.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Mazzo</label>
+                        <select name="mazzo" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                            {% for m in mazzi %}
+                            <option value="{{ m.nome }}">{{ m.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Vittorie (W)</label>
+                        <input type="number" name="vittorie" min="0" value="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Sconfitte (L)</label>
+                        <input type="number" name="sconfitte" min="0" value="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Pareggi (D)</label>
+                        <input type="number" name="pareggi" min="0" value="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Link Lista (Moxfield, MTGDecks, ecc.)</label>
+                    <input type="url" name="link_deck" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                </div>
+
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded font-bold transition">Salva Match</button>
+            </form>
+        </div>
+
+        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            <h2 class="text-md font-bold mb-3 text-white">Match Recenti (Eliminazione Rapida)</h2>
+            <div class="divide-y divide-gray-700">
+                {% for m in ultimi_match %}
+                <div class="py-2.5 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold text-gray-100">{{ m.giocatore }}</span>
+                        <span class="text-gray-500 ml-2">Tappa {{ m.tappa }} con {{ m.mazzo }} ({{ m.punteggio }} pt)</span>
+                    </div>
+                    <a href="/admin/elimina-match/{{ m.id }}" class="text-red-500 hover:text-red-400 font-bold">Elimina</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: GIOCATORI -->
+    <div id="tab-giocatori" class="tab-content hidden space-y-6">
+        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            <h2 class="text-md font-bold mb-3 text-white">Aggiungi Giocatore</h2>
+            <form method="POST" action="/admin/giocatore" class="flex gap-3 text-sm">
+                <input type="text" name="nome" placeholder="Nome e Cognome" required class="flex-grow p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-4 rounded font-bold transition">Salva</button>
+            </form>
+        </div>
+
+        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            <h2 class="text-md font-bold mb-3 text-white">Elenco Giocatori</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                {% for g in giocatori %}
+                <div class="p-2 bg-gray-900 rounded flex justify-between items-center">
+                    <span>{{ g.nome }}</span>
+                    <a href="/admin/elimina-giocatore/{{ g.id }}" class="text-red-500 hover:text-red-400 font-bold">Rimuovi</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: MAZZI -->
+    <div id="tab-mazzi" class="tab-content hidden space-y-6">
+        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            <h2 class="text-md font-bold mb-3 text-white">Aggiungi Archetipo</h2>
+            <form method="POST" action="/admin/mazzo" class="flex gap-3 text-sm">
+                <input type="text" name="nome" placeholder="Nome Archetipo (es. Burn, Caw-Gate)" required class="flex-grow p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
+                <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-4 rounded font-bold transition">Salva</button>
+            </form>
+        </div>
+
+        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            <h2 class="text-md font-bold mb-3 text-white">Elenco Archetipi</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                {% for m in mazzi %}
+                <div class="p-2 bg-gray-900 rounded flex justify-between items-center">
+                    <span>{{ m.nome }}</span>
+                    <a href="/admin/elimina-mazzo/{{ m.id }}" class="text-red-500 hover:text-red-400 font-bold">Rimuovi</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
