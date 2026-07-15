@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid py-4 h-100" style="min-height: 85vh;">
+    <div class="d-flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-white">Matrice dei Match-Up </h1>
+            <p class="text-sm text-red-300 mt-0">!!!Per il momento basata su match casuali di una terza tappa non giocata!!!</p>
+            <p class="text-sm text-gray-400 mt-1">Percentuali di vittoria reali elaborate game-by-game sulla base di tutti gli scontri diretti registrati.</p>
+        </div>
+        
+        <!-- SELETTORE TAB IN TAILWIND -->
+        <div class="flex bg-gray-800 p-1 rounded-lg border border-gray-700 text-xs font-bold" style="display: inline-flex;">
+            <button onclick="switchMatchupTab('detailed')" id="btn-detailed" class="px-4 py-2 rounded-md bg-blue-600 text-white transition duration-150">
+                Dettaglio Mazzi
+            </button>
+            <button onclick="switchMatchupTab('general')" id="btn-general" class="px-4 py-2 rounded-md text-gray-400 hover:text-white transition duration-150">
+                Macro Archetipi
+            </button>
+        </div>
+    </div>
+
+    <!-- TAB CONTENTS -->
+    <!-- TAB CONTENTS -->
+    <div class="mt-4">
+        
+        <!-- 1. TABELLA DETTAGLIATA MAZZI -->
+        <div id="tab-detailed" class="block">
+            <div class="table-responsive shadow-lg rounded border border-secondary-subtle" style="max-height: 70vh; overflow: auto;">
+                <table class="table table-bordered table-hover align-middle text-center m-0" style="font-size: 0.8rem; border-collapse: separate; border-spacing: 0;">
+                    <thead class="table-dark" style="position: sticky; top: 0; z-index: 4;">
+                        <tr>
+                            <!-- Angolo in alto a sinistra bloccato -->
+                            <th class="text-start text-white text-uppercase" 
+                                style="position: sticky; left: 0; top: 0; z-index: 5; min-width: 180px; background-color: #1e293b !important; border-right: 2.5px solid #475569; border-bottom: 2px solid #475569;">
+                                Mazzo \ Opponent
+                            </th>
+                            {% for m in mazzi %}
+                            <th class="px-3 py-3" style="min-width: 110px; background-color: #1e293b; border-bottom: 2px solid #475569;">
+                                {{ m }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m1 in mazzi %}
+                        <tr>
+                            <!-- Colonna sinistra bloccata con sfondo solido -->
+                            <td class="text-start fw-bold text-white" 
+                                style="position: sticky; left: 0; z-index: 2; background-color: #1e293b !important; border-right: 2.5px solid #475569; border-bottom: 1px solid #334155; box-shadow: 2px 0 5px rgba(0,0,0,0.3);">
+                                {{ m1 }}
+                            </td>
+                            
+                            {% for m2 in mazzi %}
+                                {% set cella = matrice[m1][m2] %}
+                                {% set winrate = cella.winrate %}
+                                {% set partite = cella.partite %}
+                                
+                                {% if winrate == "N/D" %}
+                                    <td class="text-white text-uppercase" style="font-size: 0.65rem; background-color: #8c3a1e !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155; opacity: 0.8;">no data</td>
+                                {% else %}
+                                    {% set int_val = winrate.replace('%', '') | int %}
+                                    
+                                    {# Colorazione speciale se è un mirror match (m1 == m2): lo facciamo grigio scuro/bluastro al 50% #}
+                                    {% if m1 == m2 %}
+                                        {% set color_class = "text-slate-300" %}
+                                        {% set bg_style = "background-color: rgba(71, 85, 105, 0.25) !important;" %}
+                                    {% elif int_val >= 60 %}
+                                        {% set color_class = "text-emerald-400" %}
+                                        {% set bg_style = "background-color: rgba(16, 185, 129, 0.15) !important;" %}
+                                    {% elif int_val <= 40 %}
+                                        {% set color_class = "text-rose-400" %}
+                                        {% set bg_style = "background-color: rgba(244, 63, 94, 0.15) !important;" %}
+                                    {% else %}
+                                        {% set color_class = "text-amber-400" %}
+                                        {% set bg_style = "background-color: rgba(245, 158, 11, 0.15) !important;" %}
+                                    {% endif %}
+                                    
+                                    <td class="fw-bold {{ color_class }}" title="{{ m1 }} vs {{ m2 }}: {{ winrate }} su {{ partite }} match" style="{{ bg_style }} border-bottom: 1px solid #334155; border-right: 1px solid #334155;">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <span>{{ winrate }}</span>
+                                            <span class="text-[9px] text-gray-400 font-normal">({{ partite }})</span>
+                                        </div>
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. TABELLA GENERALE MACRO-ARCHETIPI -->
+        <div id="tab-general" class="hidden">
+            <div class="col-md-8 mx-auto w-100" style="max-width: 800px;">
+                <div class="table-responsive shadow-lg rounded border border-gray-700 mx-auto" style="max-width: 100%;">
+                    <table class="table table-bordered table-hover align-middle text-center m-0 mx-auto" style="font-size: 0.95rem; border-collapse: separate; border-spacing: 0;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center text-white text-uppercase" style="width: 200px; background-color: #1e293b !important; border-right: 2.5px solid #475569 !important; border-bottom: 2px solid #475569;">
+                                    Macro Archetipo
+                                </th>
+                                {% for cat in macro_list %}
+                                <th class="px-3 py-3" style="background-color: #1e293b; border-bottom: 2px solid #475569;">{{ cat }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat1 in macro_list %}
+                            <tr>
+                                <td class="text-center fw-bold text-white" style="border-right: 2.5px solid #475569 !important; background-color: #1e293b !important; border-bottom: 1px solid #334155;">
+                                    {{ cat1 }}
+                                </td>
+                                {% for cat2 in macro_list %}
+                                    {% set cella_macro = matrice_macro[cat1][cat2] %}
+                                    {% set winrate_macro = cella_macro.winrate %}
+                                    {% set partite_macro = cella_macro.partite %}
+                                    
+                                    {% if winrate_macro == "-" %}
+                                        <td class="bg-gray-900/50 text-gray-500" style="border-bottom: 1px solid #334155; border-right: 1px solid #334155;">-</td>
+                                    {% elif winrate_macro == "N/D" %}
+                                        <td class="text-white text-uppercase" style="font-size: 0.75rem; background-color: #8c3a1e !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155; opacity: 0.8;">no data</td>
+                                    {% else %}
+                                        {% set int_val = winrate_macro.replace('%', '') | int %}
+                                        {% if int_val >= 60 %}
+                                            {% set color_class = "text-emerald-400" %}
+                                            {% set bg_style = "background-color: rgba(16, 185, 129, 0.15) !important;" %}
+                                        {% elif int_val <= 40 %}
+                                            {% set color_class = "text-rose-400" %}
+                                            {% set bg_style = "background-color: rgba(244, 63, 94, 0.15) !important;" %}
+                                        {% else %}
+                                            {% set color_class = "text-amber-400" %}
+                                            {% set bg_style = "background-color: rgba(245, 158, 11, 0.15) !important;" %}
+                                        {% endif %}
+                                        
+                                        <td class="fw-bold {{ color_class }}" title="{{ cat1 }} vs {{ cat2 }}: {{ winrate_macro }} su {{ partite_macro }} match" style="{{ bg_style }} border-bottom: 1px solid #334155; border-right: 1px solid #334155;">
+                                            <div class="flex items-center justify-center gap-1">
+                                                <span>{{ winrate_macro }}</span>
+                                                <span class="text-[10px] text-gray-400 font-normal">(n={{ partite_macro }})</span>
+                                            </div>
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert alert-info mt-4 text-center mx-auto text-xs text-gray-300 border border-blue-900 bg-blue-950/40 rounded-lg p-3" style="max-width: 800px; line-height: 1.4;">
+                    💡 Questa matrice raggruppa tutti i mazzi inseriti in 4 macro-categorie (Aggro, Control, Midrange, Combo) per evidenziare i trend strategici globali del formato.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* Semplice fix per la gestione dei colori di selezione dei Pills */
+.nav-pills .nav-link.active {
+    background-color: #3b82f6 !important;
+    color: white !important;
+}
+.nav-pills .nav-link:not(.active) {
+    color: #9ca3af !important;
+}
+.nav-pills .nav-link:not(.active):hover {
+    color: #f3f4f6 !important;
+    background-color: #374151 !important;
+}
+</style>
+
+<!-- SEZIONE: CRONOLOGIA SCONTRI DIRETTI -->
+<div class="mt-12 bg-gray-800 p-6 rounded-lg border border-gray-700">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+        <div>
+            <h2 class="text-xl font-bold text-white">📋 Cronologia Scontri Diretti</h2>
+            <p class="text-xs text-gray-400 mt-1">L'elenco completo di tutte le partite 1v1 giocate e registrate nella lega.</p>
+        </div>
+        <!-- Input di Ricerca / Filtro Rapido -->
+        <input type="text" id="search_scontri" placeholder="Filtra per mazzo..." 
+               class="w-full md:w-80 p-2 bg-gray-900 border border-gray-700 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors">
+    </div>
+
+    <div class="overflow-x-auto rounded border border-gray-700">
+        <table class="w-full text-left border-collapse text-xs" id="table_scontri">
+            <thead>
+                <tr class="bg-gray-900 text-gray-400 uppercase font-semibold border-b border-gray-700">
+                    <th class="p-3 text-center" style="width: 80px;">Tappa</th>
+                    <th class="p-3 text-lg-start" style="width: 40%;">Mazzo A</th>
+                    <th class="p-3 text-center" style="width: 120px;">Risultato (Game)</th>
+                    <th class="p-3 text-right" style="width: 40%;">Mazzo B</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700 text-gray-200">
+                {% for s in scontri %}
+                <tr class="hover:bg-gray-750/40 transition-colors">
+                    <!-- Tappa -->
+                    <td class="p-3 text-center font-bold text-blue-400 bg-gray-900/10">
+                        T{{ s.tappa }}
+                    </td>
+                    
+                    <!-- Mazzo A -->
+                    <td class="p-3 text-left font-bold text-white">
+                        <span class="text-blue-400 font-semibold">{{ s.mazzo_A }}</span>
+                    </td>
+                    
+                    <!-- Risultato Esatto Game -->
+                    <td class="p-3 text-center font-bold font-mono">
+                        <span class="bg-gray-900 px-3 py-1 rounded text-sm text-gray-300 border border-gray-700">
+                            {{ s.score_A }} - {{ s.score_B }}
+                        </span>
+                    </td>
+                    
+                    <!-- Mazzo B -->
+                    <td class="p-3 text-right font-bold text-white">
+                        <span class="text-red-400 font-semibold">{{ s.mazzo_B }}</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="p-8 text-center text-gray-500 italic">
+                        Nessun scontro diretto registrato nel database.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Script JavaScript per il filtro di ricerca client-side -->
+<script>
+    document.getElementById('search_scontri').addEventListener('input', function(e) {
+        const text = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#table_scontri tbody tr');
+        
+        rows.forEach(row => {
+            if (row.children.length >= 4) {
+                const mazzoA = row.children[1].textContent.toLowerCase();
+                const mazzoB = row.children[3].textContent.toLowerCase();
+                
+                // Mostra la riga se il testo cercato si trova nel nome di uno dei due mazzi
+                const match = mazzoA.includes(text) || mazzoB.includes(text);
+                row.style.display = match ? '' : 'none';
+            }
+        });
+    });
+</script>
+
+<script>
+    function switchMatchupTab(tabName) {
+        const tabDetailed = document.getElementById('tab-detailed');
+        const tabGeneral = document.getElementById('tab-general');
+        const btnDetailed = document.getElementById('btn-detailed');
+        const btnGeneral = document.getElementById('btn-general');
+    
+        if (tabName === 'detailed') {
+            // Mostra dettaglio, nascondi macro
+            tabDetailed.classList.remove('hidden');
+            tabDetailed.classList.add('block');
+            tabGeneral.classList.remove('block', 'd-flex', 'flex-column', 'align-items-center', 'justify-content-center');
+            tabGeneral.classList.add('hidden');
+    
+            // Aggiorna lo stile dei pulsanti
+            btnDetailed.className = "px-4 py-2 rounded-md bg-blue-600 text-white transition duration-150";
+            btnGeneral.className = "px-4 py-2 rounded-md text-gray-400 hover:text-white transition duration-150";
+        } else {
+            // Nascondi dettaglio, mostra macro
+            tabDetailed.classList.remove('block');
+            tabDetailed.classList.add('hidden');
+            tabGeneral.classList.remove('hidden');
+            tabGeneral.classList.add('block', 'd-flex', 'flex-column', 'align-items-center', 'justify-content-center');
+    
+            // Aggiorna lo stile dei pulsanti
+            btnDetailed.className = "px-4 py-2 rounded-md text-gray-400 hover:text-white transition duration-150";
+            btnGeneral.className = "px-4 py-2 rounded-md bg-blue-600 text-white transition duration-150";
+        }
+    }
+</script>
+{% endblock %}

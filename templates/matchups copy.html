@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid py-4 h-100" style="min-height: 85vh;">
+    <div class="d-flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-white">⚔️ Matrice dei Match-Up</h1>
+            <p class="text-sm text-gray-400 mt-1">Percentuali di vittoria reali elaborate game-by-game sulla base di tutti gli scontri diretti registrati.</p>
+        </div>
+        
+        <!-- SELETTORE TAB -->
+        <ul class="nav nav-pills bg-gray-800 p-1 rounded-lg border border-gray-700" id="matchupTab" role="tablist" style="display: inline-flex; list-style: none;">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active px-4 py-2 font-bold text-xs rounded-md transition" id="detailed-tab" data-bs-toggle="tab" data-bs-target="#detailed" type="button" role="tab" aria-controls="detailed" aria-selected="true">
+                    Dettaglio Mazzi
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4 py-2 font-bold text-xs rounded-md transition text-gray-400" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="false">
+                    Macro Archetipi
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- TAB CONTENTS -->
+    <div class="tab-content h-100 mt-4" id="matchupTabContent">
+        
+        <!-- 1. TABELLA DETTAGLIATA MAZZI (STICKY E CON SFONDO SOLIDO) -->
+        <div class="tab-pane fade show active h-100" id="detailed" role="tabpanel" aria-labelledby="detailed-tab">
+            <div class="table-responsive shadow-lg rounded border border-secondary-subtle" style="max-height: 70vh; overflow: auto;">
+                <table class="table table-bordered table-hover align-middle text-center m-0" style="font-size: 0.8rem; border-collapse: separate; border-spacing: 0;">
+                    <thead class="table-dark" style="position: sticky; top: 0; z-index: 4;">
+                        <tr>
+                            <!-- Angolo in alto a sinistra: Bloccato, sfondo solido scuro e linea di separazione netta -->
+                            <th class="text-start text-white text-uppercase" 
+                                style="position: sticky; left: 0; top: 0; z-index: 5; min-width: 180px; background-color: #1e293b !important; border-right: 2.5px solid #475569; border-bottom: 2px solid #475569;">
+                                Mazzo \ Opponent
+                            </th>
+                            {% for m in mazzi %}
+                            <th class="px-3 py-3" style="min-width: 110px; background-color: #1e293b; border-bottom: 2px solid #475569;">
+                                {{ m }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m1 in mazzi %}
+                        <tr>
+                            <!-- Prima colonna: Nomi dei mazzi bloccati a sinistra con sfondo solido e coprente -->
+                            <td class="text-start fw-bold text-white" 
+                                style="position: sticky; left: 0; z-index: 2; background-color: #1e293b !important; border-right: 2.5px solid #475569; border-bottom: 1px solid #334155; box-shadow: 2px 0 5px rgba(0,0,0,0.3);">
+                                {{ m1 }}
+                            </td>
+                            
+                            {% for m2 in mazzi %}
+                                {% set val = matrice[m1][m2] %}
+                                {% if val == "-" %}
+                                    <td class="bg-gray-900/50 text-gray-500" style="border-bottom: 1px solid #334155; border-right: 1px solid #334155;">-</td>
+                                {% elif val == "N/D" %}
+                                    <!-- Sienna/Marrone caldo per assenza dati -->
+                                    <td class="text-white text-uppercase" style="font-size: 0.65rem; background-color: #8c3a1e !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155; opacity: 0.8;">no data</td>
+                                {% else %}
+                                    {# Estraiamo il valore intero per definire le tonalità di colore #}
+                                    {% set int_val = val.replace('%', '') | int %}
+                                    {% if int_val >= 60 %}
+                                        <!-- Favorevole (Verde) -->
+                                        <td class="fw-bold text-emerald-400" title="{{ m1 }} vs {{ m2 }}: {{ val }}" style="background-color: rgba(16, 185, 129, 0.15) !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155;">{{ val }}</td>
+                                    {% elif int_val <= 40 %}
+                                        <!-- Sfavorevole (Rosso) -->
+                                        <td class="fw-bold text-rose-400" title="{{ m1 }} vs {{ m2 }}: {{ val }}" style="background-color: rgba(244, 63, 94, 0.15) !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155;">{{ val }}</td>
+                                    {% else %}
+                                        <!-- Equilibrato (Giallo/Arancio) -->
+                                        <td class="fw-bold text-amber-400" title="{{ m1 }} vs {{ m2 }}: {{ val }}" style="background-color: rgba(245, 158, 11, 0.15) !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155;">{{ val }}</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. TABELLA GENERALE MACRO-ARCHETIPI CENTRATA -->
+        <div class="tab-pane fade h-100 d-flex flex-column align-items-center justify-content-center" id="general" role="tabpanel" aria-labelledby="general-tab">
+            <div class="col-md-8 mx-auto w-100" style="max-width: 800px;">
+                <div class="table-responsive shadow-lg rounded border border-gray-700 mx-auto" style="max-width: 100%;">
+                    <table class="table table-bordered table-hover align-middle text-center m-0 mx-auto" style="font-size: 0.95rem; border-collapse: separate; border-spacing: 0;">
+                        <thead class="table-dark">
+                            <tr>
+                                <!-- Centrato, sfondo solido e separato con una linea marcata di 2.5px sul bordo destro -->
+                                <th class="text-center text-white text-uppercase" style="width: 200px; background-color: #1e293b !important; border-right: 2.5px solid #475569 !important; border-bottom: 2px solid #475569;">
+                                    Macro Archetipo
+                                </th>
+                                {% for cat in macro_list %}
+                                <th class="px-3 py-3" style="background-color: #1e293b; border-bottom: 2px solid #475569;">{{ cat }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat1 in macro_list %}
+                            <tr>
+                                <!-- Centrato, sfondo scuro e solido, separato con linea destra da 2.5px -->
+                                <td class="text-center fw-bold text-white" style="border-right: 2.5px solid #475569 !important; background-color: #1e293b !important; border-bottom: 1px solid #334155;">
+                                    {{ cat1 }}
+                                </td>
+                                {% for cat2 in macro_list %}
+                                    {% set val = matrice_macro[cat1][cat2] %}
+                                    {% if val == "-" %}
+                                        <td class="bg-gray-900/50 text-gray-500" style="border-bottom: 1px solid #334155; border-right: 1px solid #334155;">-</td>
+                                    {% elif val == "N/D" %}
+                                        <td class="text-white text-uppercase" style="font-size: 0.75rem; background-color: #8c3a1e !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155; opacity: 0.8;">no data</td>
+                                    {% else %}
+                                        {% set int_val = val.replace('%', '') | int %}
+                                        {% if int_val >= 60 %}
+                                            <td class="fw-bold text-emerald-400" title="{{ cat1 }} vs {{ cat2 }}: {{ val }}" style="background-color: rgba(16, 185, 129, 0.15) !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155;">{{ val }}</td>
+                                        {% elif int_val <= 40 %}
+                                            <td class="fw-bold text-rose-400" title="{{ cat1 }} vs {{ cat2 }}: {{ val }}" style="background-color: rgba(244, 63, 94, 0.15) !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155;">{{ val }}</td>
+                                        {% else %}
+                                            <td class="fw-bold text-amber-400" title="{{ cat1 }} vs {{ cat2 }}: {{ val }}" style="background-color: rgba(245, 158, 11, 0.15) !important; border-bottom: 1px solid #334155; border-right: 1px solid #334155;">{{ val }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert alert-info mt-4 text-center mx-auto text-xs text-gray-300 border border-blue-900 bg-blue-950/40 rounded-lg p-3" style="max-width: 800px; line-height: 1.4;">
+                    💡 Questa matrice raggruppa tutti i mazzi inseriti in 4 macro-categorie (Aggro, Control, Midrange, Combo) per evidenziare i trend strategici globali del formato.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* Semplice fix per la gestione dei colori di selezione dei Pills */
+.nav-pills .nav-link.active {
+    background-color: #3b82f6 !important;
+    color: white !important;
+}
+.nav-pills .nav-link:not(.active) {
+    color: #9ca3af !important;
+}
+.nav-pills .nav-link:not(.active):hover {
+    color: #f3f4f6 !important;
+    background-color: #374151 !important;
+}
+</style>
+<!-- SEZIONE: CRONOLOGIA SCONTRI DIRETTI -->
+    <div class="mt-12 bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-white">📋 Cronologia Scontri Diretti</h2>
+                <p class="text-xs text-gray-400 mt-1">L'elenco completo di tutte le partite 1v1 giocate e registrate nella lega.</p>
+            </div>
+            <!-- Input di Ricerca / Filtro Rapido -->
+            <input type="text" id="search_scontri" placeholder="Cerca mazzo o giocatore..." 
+                   class="w-full md:w-80 p-2 bg-gray-900 border border-gray-700 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors">
+        </div>
+
+        <div class="overflow-x-auto rounded border border-gray-700">
+            <table class="w-full text-left border-collapse text-xs" id="table_scontri">
+                <thead>
+                    <tr class="bg-gray-900 text-gray-400 uppercase font-semibold border-b border-gray-700">
+                        <th class="p-3 text-center" style="width: 80px;">Tappa</th>
+                        <th class="p-3">Giocatore A (Mazzo)</th>
+                        <th class="p-3 text-center" style="width: 100px;">Risultato</th>
+                        <th class="p-3 text-right">Giocatore B (Mazzo)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700 text-gray-200">
+                    {% for s in scontri %}
+                    <tr class="hover:bg-gray-750/40 transition-colors">
+                        <!-- Tappa -->
+                        <td class="p-3 text-center font-bold text-blue-400 bg-gray-900/10">
+                            T{{ s.tappa }}
+                        </td>
+                        
+                        <!-- Giocatore A e suo Mazzo -->
+                        <td class="p-3">
+                            <span class="font-bold text-gray-100">{{ s.giocatore_A }}</span>
+                            <span class="text-blue-400 font-medium ml-1.5">({{ s.mazzo_A }})</span>
+                        </td>
+                        
+                        <!-- Risultato Esatto Game -->
+                        <td class="p-3 text-center font-bold font-mono">
+                            <span class="bg-gray-900 px-3 py-1 rounded text-sm text-gray-300 border border-gray-700">
+                                {{ s.score_A }} - {{ s.score_B }}
+                            </span>
+                        </td>
+                        
+                        <!-- Giocatore B e suo Mazzo -->
+                        <td class="p-3 text-right">
+                            <span class="text-red-400 font-medium mr-1.5">({{ s.mazzo_B }})</span>
+                            <span class="font-bold text-gray-100">{{ s.giocatore_B }}</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-gray-500 italic">
+                            Nessun scontro diretto registrato nel database.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Script JavaScript per il filtro di ricerca client-side -->
+    <script>
+        document.getElementById('search_scontri').addEventListener('input', function(e) {
+            const text = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#table_scontri tbody tr');
+            
+            rows.forEach(row => {
+                if (row.children.length >= 4) {
+                    const colA = row.children[1].textContent.toLowerCase();
+                    const colB = row.children[3].textContent.toLowerCase();
+                    
+                    // Mostra la riga se il testo cercato si trova nel giocatore o nel mazzo di A o B
+                    const match = colA.includes(text) || colB.includes(text);
+                    row.style.display = match ? '' : 'none';
+                }
+            });
+        });
+    </script>
+{% endblock %}

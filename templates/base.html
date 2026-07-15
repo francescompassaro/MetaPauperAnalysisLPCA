@@ -18,6 +18,10 @@
             {% if is_admin %}
             <a href="/admin" class="text-yellow-400 hover:text-yellow-300 transition text-sm font-semibold">Amministrazione</a>
             {% endif %}
+            <!-- Cerca i link della navbar in base.html e aggiungi questo -->
+            <li class="nav-item">
+                <a class="nav-link" href="/matchups">Match-Up Matrix</a>
+            </li>
         </div>
         <div>
             {% if is_admin %}

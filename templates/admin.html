@@ -69,15 +69,15 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Vittorie (W)</label>
+                        <label class="block text-xs text-gray-400 mb-1">Vittorie Totali (W)</label>
                         <input type="number" name="vittorie" min="0" value="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Sconfitte (L)</label>
+                        <label class="block text-xs text-gray-400 mb-1">Sconfitte Totali (L)</label>
                         <input type="number" name="sconfitte" min="0" value="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Pareggi (D)</label>
+                        <label class="block text-xs text-gray-400 mb-1">Pareggi Totali (D)</label>
                         <input type="number" name="pareggi" min="0" value="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
                     </div>
                 </div>
@@ -87,7 +87,66 @@
                     <input type="url" name="link_deck" class="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200">
                 </div>
 
-                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded font-bold transition">Salva Match</button>
+                <!-- SEZIONE AGGIUNTIVA MATCHUP SINGOLI (COLLASSABILE) -->
+                <div class="border border-gray-700 rounded-lg p-4 bg-gray-900/50 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">⚔️ Dettaglio Scontri Diretti (Matchup)</h3>
+                            <p class="text-xs text-gray-400 mt-0.5">Associa i risultati reali dei singoli turni di svizzera.</p>
+                        </div>
+                        <button type="button" onclick="toggleMatchups()" class="text-xs font-bold bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded transition">
+                            Espandi / Nascondi
+                        </button>
+                    </div>
+
+                    <!-- Contenitore delle righe degli scontri -->
+                    <div id="matchups-section" class="hidden space-y-3 pt-2">
+                        <div id="matchup-list" class="space-y-2">
+                            <!-- Prima riga di esempio vuota per l'inserimento -->
+                            <div class="matchup-row grid grid-cols-1 md:grid-cols-12 gap-2 items-center bg-gray-900 p-3 rounded border border-gray-800">
+                                <div class="md:col-span-4">
+                                    <label class="block text-[10px] text-gray-400 mb-1">Avversario</label>
+                                    <select name="avversario[]" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-xs">
+                                        <option value="">-- Seleziona --</option>
+                                        {% for g in giocatori %}
+                                        <option value="{{ g.nome }}">{{ g.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="md:col-span-4">
+                                    <label class="block text-[10px] text-gray-400 mb-1">Mazzo Avversario</label>
+                                    <select name="mazzo_avversario[]" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-xs">
+                                        <option value="">-- Seleziona --</option>
+                                        {% for m in mazzi %}
+                                        <option value="{{ m.nome }}">{{ m.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="md:col-span-1.5 col-span-6">
+                                    <label class="block text-[10px] text-gray-400 mb-1 text-center">Game Vinti (A)</label>
+                                    <input type="number" name="score_A[]" min="0" max="2" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-center text-xs">
+                                </div>
+                                <div class="md:col-span-1.5 col-span-6">
+                                    <label class="block text-[10px] text-gray-400 mb-1 text-center">Game Persi (B)</label>
+                                    <input type="number" name="score_B[]" min="0" max="2" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-center text-xs">
+                                </div>
+                                <div class="md:col-span-1 text-center pt-4 md:pt-0">
+                                    <button type="button" onclick="rimuoviRiga(this)" class="text-red-500 hover:text-red-400 font-bold text-sm">✕</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="aggiungiRiga()" class="w-full text-xs font-bold text-center border border-dashed border-gray-700 hover:border-gray-600 text-gray-400 hover:text-gray-200 py-2 rounded transition">
+                            + Aggiungi Matchup Turno Successivo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded font-bold transition w-full md:w-auto">
+                        Salva Risultato e Matchup
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -154,6 +213,112 @@
     </div>
 </div>
 
+<!-- TEMPLATE NASCOSTO JAVASCRIPT PER LE NUOVE RIGHE -->
+<template id="matchup-row-template">
+    <div class="matchup-row grid grid-cols-1 md:grid-cols-12 gap-2 items-center bg-gray-900 p-3 rounded border border-gray-800">
+        <div class="md:col-span-4">
+            <label class="block text-[10px] text-gray-400 mb-1">Avversario</label>
+            <select name="avversario[]" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-xs">
+                <option value="">-- Seleziona --</option>
+                {% for g in giocatori %}
+                <option value="{{ g.nome }}">{{ g.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="md:col-span-4">
+            <label class="block text-[10px] text-gray-400 mb-1">Mazzo Avversario</label>
+            <select name="mazzo_avversario[]" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-xs">
+                <option value="">-- Seleziona --</option>
+                {% for m in mazzi %}
+                <option value="{{ m.nome }}">{{ m.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="md:col-span-1.5 col-span-6">
+            <label class="block text-[10px] text-gray-400 mb-1 text-center">Game Vinti (A)</label>
+            <input type="number" name="score_A[]" min="0" max="2" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-center text-xs">
+        </div>
+        <div class="md:col-span-1.5 col-span-6">
+            <label class="block text-[10px] text-gray-400 mb-1 text-center">Game Persi (B)</label>
+            <input type="number" name="score_B[]" min="0" max="2" class="w-full p-1.5 bg-gray-800 border border-gray-700 rounded text-gray-200 text-center text-xs">
+        </div>
+        <div class="md:col-span-1 text-center pt-4 md:pt-0">
+            <button type="button" onclick="rimuoviRiga(this)" class="text-red-500 hover:text-red-400 font-bold text-sm">✕</button>
+        </div>
+    </div>
+</template>
 
+<script>
+    // Gestione del cambio Tab con classi Tailwind
+    function openTab(tabId) {
+        // 1. Nascondi tutti i contenuti dei tab
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            content.classList.add('hidden');
+            content.classList.remove('space-y-6'); // Evita bug di spaziatura cumulativi
+        });
+    
+        // 2. Rimuovi lo stato attivo (bordo blu e testo blu) da tutti i bottoni del menu
+        const buttons = document.querySelectorAll('button[id^="btn-tab-"]');
+        buttons.forEach(btn => {
+            btn.className = "px-4 py-2.5 text-gray-400 hover:text-gray-200 font-semibold transition";
+        });
+    
+        // 3. Mostra il contenuto del tab selezionato
+        const activeContent = document.getElementById(tabId);
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+            activeContent.classList.add('space-y-6');
+        }
+    
+        // 4. Attiva visivamente il bottone corrispondente
+        // Es: openTab('tab-giocatori') -> attiva il bottone 'btn-tab-giocatori'
+        const buttonId = "btn-" + tabId;
+        const activeBtn = document.getElementById(buttonId);
+        if (activeBtn) {
+            activeBtn.className = "px-4 py-2.5 border-b-2 border-blue-500 text-blue-400 font-semibold";
+        }
+    }
+    
+    // All'avvio della pagina, controlla se c'è un parametro 'tab' nell'URL
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetTab = urlParams.get('tab');
+    
+        if (targetTab === 'giocatori') {
+            openTab('tab-giocatori');
+        } else if (targetTab === 'mazzi') {
+            openTab('tab-mazzi');
+        } else {
+            // Default di sicurezza
+            openTab('tab-match');
+        }
+    });
+    
+    // Funzione per mostrare/nascondere la sezione dei matchup
+    function toggleMatchups() {
+        const section = document.getElementById('matchups-section');
+        section.classList.toggle('hidden');
+    }
+    
+    // Funzione per clonare e aggiungere una riga di scontro
+    function aggiungiRiga() {
+        const template = document.getElementById('matchup-row-template');
+        const clone = template.content.cloneNode(true);
+        document.getElementById('matchup-list').appendChild(clone);
+    }
+    
+    // Funzione per rimuovere una riga di scontro
+    function rimuoviRiga(button) {
+        const rows = document.querySelectorAll('.matchup-row');
+        if (rows.length > 1) {
+            button.closest('.matchup-row').remove();
+        } else {
+            const row = button.closest('.matchup-row');
+            row.querySelectorAll('select').forEach(select => select.value = '');
+            row.querySelectorAll('input').forEach(input => input.value = '');
+        }
+    }
+    </script>
 
 {% endblock %}

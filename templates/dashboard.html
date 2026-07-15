@@ -65,112 +65,113 @@
         </div>
     </div>
 
-    <!-- REGISTRO STORICO DI TUTTI I MATCH INSERITI -->
-    <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-            <h2 class="text-lg font-bold text-white">Registro Storico di Tutti i Match Inseriti</h2>
-            <input type="text" id="search_registro" placeholder="Filtra per giocatore, mazzo o negozio..." class="w-full md:w-80 p-2 bg-gray-900 border border-gray-700 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500">
-        </div>
-        
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse" id="table_registro">
-                <thead>
-                    <tr class="border-b border-gray-700 text-gray-400 uppercase text-[10px]">
-                        <th class="py-3 px-4">Tappa</th>
-                        <th class="py-3 px-4">Stagione</th>
-                        <th class="py-3 px-4">Negozio</th>
-                        <th class="py-3 px-4">Giocatore</th>
-                        <th class="py-3 px-4">Mazzo</th>
-                        <th class="py-3 px-4 text-center">Record (W-L-D)</th>
-                        <th class="py-3 px-4 text-right">Punti</th>
-                        <th class="py-3 px-4 text-center">Lista</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-700 text-sm">
-                    {% for r in risultati %}
-                    <tr class="hover:bg-gray-700/30 transition-colors">
-                        <td class="py-3 px-4 font-semibold text-gray-300">Tappa {{ r.tappa }}</td>
-                        <td class="py-3 px-4 text-gray-400">{{ r.season }} {{ r.anno }}</td>
-                        <td class="py-3 px-4 text-gray-400">{{ r.negozio }}</td>
-                        <td class="py-3 px-4 font-bold text-white">{{ r.giocatore }}</td>
-                        <td class="py-3 px-4 text-blue-400 font-medium">{{ r.mazzo }}</td>
-                        <td class="py-3 px-4 text-center text-gray-300 font-mono">{{ r.vittorie }}-{{ r.sconfitte }}-{{ r.pareggi }}</td>
-                        <td class="py-3 px-4 text-right font-extrabold text-yellow-500">{{ r.punteggio }}</td>
-                        <td class="py-3 px-4 text-center">
-                            {% if r.link_deck and r.link_deck.strip() != "" %}
-                            <a href="{{ r.link_deck }}" target="_blank" class="inline-flex items-center justify-center bg-blue-600/30 hover:bg-blue-600 text-blue-400 hover:text-white px-2.5 py-1 rounded text-xs font-bold border border-blue-500/50 transition duration-150">
-                                Vedi Lista
-                            </a>
-                            {% else %}
-                            <span class="text-xs text-gray-600 italic">Non disponibile</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% if not risultati %}
-                    <tr>
-                        <td colspan="8" class="text-center py-8 text-gray-500 italic text-sm">Nessun match ancora inserito nel database.</td>
-                    </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+ <!-- REGISTRO STORICO DI TUTTI I MATCH INSERITI -->
+ <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+        <h2 class="text-lg font-bold text-white">Registro Storico di Tutti i Match Inseriti</h2>
+        <input type="text" id="search_registro" placeholder="Filtra per giocatore, mazzo o negozio..." class="w-full md:w-80 p-2 bg-gray-900 border border-gray-700 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500">
     </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" id="table_registro">
+            <thead>
+                <tr class="border-b border-gray-700 text-gray-400 uppercase text-[10px]">
+                    <th class="py-3 px-4">Tappa</th>
+                    <th class="py-3 px-4">Stagione</th>
+                    <th class="py-3 px-4">Negozio</th>
+                    <th class="py-3 px-4">Giocatore</th>
+                    <th class="py-3 px-4">Mazzo</th>
+                    <th class="py-3 px-4 text-center">Record (W-L-D)</th>
+                    <th class="py-3 px-4 text-right">Punti</th>
+                    <th class="py-3 px-4 text-center">Lista</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700 text-sm">
+                {# Ordina prima per anno decrescente, poi per season decrescente, e infine per tappa decrescente #}
+                {% for r in risultati | sort(attribute='anno', reverse=true) | sort(attribute='season', reverse=true) | sort(attribute='tappa', reverse=true) %}
+                <tr class="hover:bg-gray-700/30 transition-colors">
+                    <td class="py-3 px-4 font-semibold text-gray-300">Tappa {{ r.tappa }}</td>
+                    <td class="py-3 px-4 text-gray-400">{{ r.season }} {{ r.anno }}</td>
+                    <td class="py-3 px-4 text-gray-400">{{ r.negozio }}</td>
+                    <td class="py-3 px-4 font-bold text-white">{{ r.giocatore }}</td>
+                    <td class="py-3 px-4 text-blue-400 font-medium">{{ r.mazzo }}</td>
+                    <td class="py-3 px-4 text-center text-gray-300 font-mono">{{ r.vittorie }}-{{ r.sconfitte }}-{{ r.pareggi }}</td>
+                    <td class="py-3 px-4 text-right font-extrabold text-yellow-500">{{ r.punteggio }}</td>
+                    <td class="py-3 px-4 text-center">
+                        {% if r.link_deck and r.link_deck.strip() != "" %}
+                        <a href="{{ r.link_deck }}" target="_blank" class="inline-flex items-center justify-center bg-blue-600/30 hover:bg-blue-600 text-blue-400 hover:text-white px-2.5 py-1 rounded text-xs font-bold border border-blue-500/50 transition duration-150">
+                            Vedi Lista
+                        </a>
+                        {% else %}
+                        <span class="text-xs text-gray-600 italic">Non disponibile</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not risultati %}
+                <tr>
+                    <td colspan="8" class="text-center py-8 text-gray-500 italic text-sm">Nessun match ancora inserito nel database.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
 </div>
 
 <script>
-    // Filtro Classifica Generale Client-Side
-    document.getElementById('search_classifica').addEventListener('input', function(e) {
-        const text = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#table_classifica tbody tr');
-        rows.forEach(row => {
-            const name = row.children[1].textContent.toLowerCase();
-            row.style.display = name.includes(text) ? '' : 'none';
-        });
+// Filtro Classifica Generale Client-Side
+document.getElementById('search_classifica').addEventListener('input', function(e) {
+    const text = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#table_classifica tbody tr');
+    rows.forEach(row => {
+        const name = row.children[1].textContent.toLowerCase();
+        row.style.display = name.includes(text) ? '' : 'none';
     });
+});
 
-    // Filtro Registro Storico Client-Side
-    document.getElementById('search_registro').addEventListener('input', function(e) {
-        const text = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#table_registro tbody tr');
-        rows.forEach(row => {
-            // Unisce i testi di Negozio (indice 2), Giocatore (indice 3) e Mazzo (indice 4) per una ricerca flessibile
-            if (row.children.length >= 5) {
-                const negozio = row.children[2].textContent.toLowerCase();
-                const giocatore = row.children[3].textContent.toLowerCase();
-                const mazzo = row.children[4].textContent.toLowerCase();
-                
-                const match = negozio.includes(text) || giocatore.includes(text) || mazzo.includes(text);
-                row.style.display = match ? '' : 'none';
-            }
-        });
+// Filtro Registro Storico Client-Side
+document.getElementById('search_registro').addEventListener('input', function(e) {
+    const text = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#table_registro tbody tr');
+    rows.forEach(row => {
+        // Unisce i testi di Negozio (indice 2), Giocatore (indice 3) e Mazzo (indice 4) per una ricerca flessibile
+        if (row.children.length >= 5) {
+            const negozio = row.children[2].textContent.toLowerCase();
+            const giocatore = row.children[3].textContent.toLowerCase();
+            const mazzo = row.children[4].textContent.toLowerCase();
+            
+            const match = negozio.includes(text) || giocatore.includes(text) || mazzo.includes(text);
+            row.style.display = match ? '' : 'none';
+        }
     });
+});
 
-    // Plotly Pie Chart
-    const rawData = JSON.parse('{{ metashare_json | safe }}');
-    const data = [{
-        values: rawData.values,
-        labels: rawData.labels,
-        type: 'pie',
-        hole: 0.45,
-        marker: {
-            colors: ['#60A5FA', '#34D399', '#FBBF24', '#F87171', '#A78BFA', '#F472B6', '#FB923C', '#2DD4BF']
-        },
-        textinfo: 'percent',
-        textposition: 'inside',
-        automargin: true
-    }];
+// Plotly Pie Chart
+const rawData = JSON.parse('{{ metashare_json | safe }}');
+const data = [{
+    values: rawData.values,
+    labels: rawData.labels,
+    type: 'pie',
+    hole: 0.45,
+    marker: {
+        colors: ['#60A5FA', '#34D399', '#FBBF24', '#F87171', '#A78BFA', '#F472B6', '#FB923C', '#2DD4BF']
+    },
+    textinfo: 'percent',
+    textposition: 'inside',
+    automargin: true
+}];
 
-    const layout = {
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#9CA3AF', size: 11 },
-        showlegend: true,
-        legend: { x: 1, y: 0.5, font: { size: 10 } },
-        margin: { t: 0, b: 0, l: 0, r: 0 }
-    };
+const layout = {
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#9CA3AF', size: 11 },
+    showlegend: true,
+    legend: { x: 1, y: 0.5, font: { size: 10 } },
+    margin: { t: 0, b: 0, l: 0, r: 0 }
+};
 
-    Plotly.newPlot('chart_metashare', data, layout, {responsive: true, displayModeBar: false});
+Plotly.newPlot('chart_metashare', data, layout, {responsive: true, displayModeBar: false});
 </script>
 
 {% endblock %}
